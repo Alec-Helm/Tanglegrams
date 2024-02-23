@@ -118,8 +118,8 @@ LEFTS2 = {L14, L24, L34, L44}
 RIGHTS2 = {R11, R21}
 
 #check
-#TwoCrossingChecker(LEFTS1, RIGHTS1, [M])
-#TwoCrossingChecker(LEFTS2, RIGHTS2, [M])
+TwoCrossingChecker(LEFTS1, RIGHTS1, [M])
+TwoCrossingChecker(LEFTS2, RIGHTS2, [M])
 print("s = 1 case is done")
 print()
 
@@ -144,8 +144,8 @@ LEFTS2 = {L14, L24, L34, L44}
 RIGHTS2 = {R11, R21}
 
 #check
-#TwoCrossingChecker(LEFTS1, RIGHTS1, [M])
-#TwoCrossingChecker(LEFTS2, RIGHTS2, [M])
+TwoCrossingChecker(LEFTS1, RIGHTS1, [M])
+TwoCrossingChecker(LEFTS2, RIGHTS2, [M])
 print("s = 3 case is done")
 print()
 
@@ -214,8 +214,8 @@ LEFTS2 = {L14, L24, L34, L44}
 RIGHTS2 = {R11, R21}
 
 #check
-#TwoCrossingChecker(LEFTS1, RIGHTS1, [M])
-#TwoCrossingChecker(LEFTS2, RIGHTS2, [M])
+TwoCrossingChecker(LEFTS1, RIGHTS1, [M])
+TwoCrossingChecker(LEFTS2, RIGHTS2, [M])
 print("s = 5 case is done")
 print()
 
@@ -370,8 +370,8 @@ RIGHTS.append(newRights)
 M = {a1:a2, b1:b2, c1:c2, d1:d2, x1:x2, y1:y2, z11:z12, alpha1:alpha2, beta1:beta2}
 
 #check
-#for i in range(len(LEFTS)):
-    #TwoCrossingChecker(LEFTS[i], RIGHTS[i], [M])
+for i in range(len(LEFTS)):
+    TwoCrossingChecker(LEFTS[i], RIGHTS[i], [M])
 
 
 print("s = 4 ,with alpha!= beta, case is done")
@@ -415,8 +415,8 @@ RIGHTS.append(newRights)
 M = {a1:a2, b1:b2, c1:c2, d1:d2, x1:x2, y1:y2, z11:z12, alpha1:alpha2}
 
 #check
-#for i in range(len(LEFTS)):
-    #TwoCrossingChecker(LEFTS[i], RIGHTS[i], [M])
+for i in range(len(LEFTS)):
+    TwoCrossingChecker(LEFTS[i], RIGHTS[i], [M])
 
 
 print("s = 4 ,with alpha= beta, case is done")
@@ -454,13 +454,13 @@ RIGHTS = {R1, R2}
 
 #check
 TwoCrossingChecker(LEFTS, RIGHTS, [M])
-print("s = 8 case is done")
+print("s = 11 case is done")
 print()
 
 
 
 
-# s11
+# s8
 LC = ((z11),(x1,b1))
 L1 = (a1,(y1,(c1,(d1,LC))))
 L2 = (a1,(y1,((c1,d1),LC)))
@@ -477,22 +477,5 @@ RIGHTS = {R1, R2}
 
 #check
 TwoCrossingChecker(LEFTS, RIGHTS, [M])
-print("s = 11 case is done")
+print("s = 8 case is done")
 print()
-
-
-
-
-
-
-# s11
-LC = ((z11,y1),(x1,b1))
-L1 = ((c1,d1),(a1,LC))
-L2 = (c1,(d1,(a1,LC)))
-L3 = (c1,(a1,(d1,LC)))
-L4 = (a1,(c1,(d1,LC)))
-L5 = (a1,((c1,d1),LC))
-
-RC = (z12,b1)
-R1 = (a2,(x2,((c2,d2),RC)))
-R2 = (a2,(x2,(c2,(d2,RC))))
