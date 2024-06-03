@@ -1,4 +1,4 @@
-from tanglegramClassv2 import *
+from tanglegram_class import *
 #
 #
 #
