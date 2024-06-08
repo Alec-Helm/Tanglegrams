@@ -3,11 +3,6 @@
  Tanglegrams are equipped with the ability to have their crossing number determined, 
  to report their size, and to determine if they are k-crossing critical for any given k"""
 
-import copy
-
-
-
-
 class BinaryTree:
     """binary_tree allows the creation of binary tree objects.
     these are created recursively by making cherries
@@ -43,7 +38,7 @@ class BinaryTree:
                 if pruned_down_tree  is False:
                     self.identity = self.upper_child.identity
                     return self.upper_child
-                    
+
                 self.identity = pruned_up_tree.identity + pruned_down_tree.identity
                 return BinaryTree(self.n, pruned_up_tree, pruned_down_tree)
 
@@ -69,6 +64,31 @@ class BinaryTree:
             return frozenset(new_orderings)
 
 
+    def possible_canonical_orderings(self):
+        """returns the leaf orderings in all possible canonical layouts
+        as a frozenset of ordered tuples"""
+        if self.n == 1:
+            return frozenset((self.identity,))
+        else:
+            upper_orderings = self.upper_child.possible_orderings()
+            upper_size = (self.upper_child).n
+            lower_orderings = self.lower_child.possible_orderings()
+            lower_size = (self.lower_child).n
+
+            new_orderings = set()
+
+            if upper_size >= lower_size:
+                for i in upper_orderings:
+                    for j in lower_orderings:
+                        new_orderings.add(i+j)
+            if upper_size <= lower_size:
+                for i in upper_orderings:
+                    for j in lower_orderings:
+                        new_orderings.add(j+i)
+
+            return frozenset(new_orderings)
+
+
 
 
 def create_binary_tree(parenthesization):
@@ -88,7 +108,18 @@ def create_binary_tree(parenthesization):
         return BinaryTree(length, left, right)
 
 
+def binary_tree_ismorphic_check(binary_tree1, binary_tree2):
+    """reports whether or not the two given binary trees are isomorphic"""
 
+    if binary_tree1.n != binary_tree2.n:
+        return False
+
+    if binary_tree_ismorphic_check(binary_tree1.upper_child, binary_tree2.upper_child) and binary_tree_ismorphic_check(binary_tree1.lower_child, binary_tree2.lower_child):
+        return True
+    elif binary_tree_ismorphic_check(binary_tree1.upper_child, binary_tree2.lower_child) and binary_tree_ismorphic_check(binary_tree1.lower_child, binary_tree2.upper_child):
+        return True
+    else:
+        return False
 
 #provide two binary trees and a matching between their vertices
 #a matching should be a dictionary
@@ -149,6 +180,8 @@ class Tanglegram:
         (self.sigma).pop(left_leaf)
         self.size -= 1
         self.crossing_number = self.get_crossing_number
+
+        return self
 
 
 
@@ -211,8 +244,61 @@ class Tanglegram:
         return False
 
 
+    def get_canonical_layouts(self):
+        """returns a tuple where the first element is all canonical leaf
+        orders of the left tree, and the second is all canonical
+        leaf orders of the right tree"""
+        return (self.L.possible_canonical_orderings(), self.R.possible_canonical_orderings())
 
 
 
 
+def determine_isomorphic(tanglegram1, tanglegram2):
+    """determines if there exists a tanglegram isomorphism
+    between the two given tanglegram objects"""
 
+    #first, make sure the left and right trees are actually isomorphic
+    if not binary_tree_ismorphic_check(tanglegram1.L, tanglegram2.L):
+        return False
+    if not binary_tree_ismorphic_check(tanglegram1.R, tanglegram2.R):
+        return False
+
+    #first, pick an arbitrary canonical layout of tanglegram1
+    fixed_layouts = tanglegram1.get_canonical_layouts()
+    not_found = True
+    for layout in fixed_layouts:
+        if not_found:
+            fixed_left = layout[0]
+            fixed_right = layout[1]
+            not_found = True
+
+    #next find the permutation associated with the fixed layout
+    matching1 = tanglegram1.sigma
+    fixed_permutation = []
+    for index in fixed_left:
+        fixed_permutation.append(fixed_right.index(matching1[index]))
+
+
+    #then get all layouts of tanglegram2
+    comparison_layouts = tanglegram2.get_canonical_layouts()
+    comparison_left_layouts = comparison_layouts[0]
+    comparison_right_layouts = comparison_layouts[1]
+
+
+    #then, check if they are isomorphic
+    #by determining the associated permutation and seeing if its the same
+    #as the fixed one
+    matching2 = tanglegram2.sigma
+
+    for index, left_layout in enumerate(comparison_left_layouts):
+        counter = 0
+
+        for left_leaf in left_layout:
+            right_index = (comparison_right_layouts[index]).index(matching2[left_leaf])
+            if right_index != fixed_permutation[counter]:
+                break
+            if counter == len(matching2):
+                return True
+            counter += 1
+
+    return False
