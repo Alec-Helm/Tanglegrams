@@ -15,8 +15,6 @@ The file **tanglegram_functions.sage** primarily exists for two purposes.
 (2) The *find_all_extensions* function intakes a set of tanglegrams all of the same size, and outputs all tanglegrams of size one greater
 which contains one of the tanglegrams from the list as an induced subtanglegram
 
-The file **crossing_critical_functions.sage**
+The file **crossing_critical_functions.sage** contains the function *find_k_crossing_critical(k, n)*, which produces all k-crossing critical tanglegrams of size at most n. The function is not particularly optimized, and was only made to be used for *k=2* and *n=8*. 
 
-This file contains the function *find_k_crossing_critical(k, n)*, which produces all k-crossing critical tanglegrams of size at most n. The function is not particularly optimized, and was only made to be used for *k=2* and *n=8*. 
-
-The file **two_crossing_critical_tanglegrams.tex** contains a full list of all 2-crossing critical tanglegrams. Each line of the file is the graph6 string for the of the tanglegrams, sorted in order of increasing size of the tanglegram (ie, all size 5, then size 6, and so on). As shown in our paper, there are 2 at size 5, 155 at size 6, 331 at size 7, and ??? at size 8.
+The file **two_crossing_critical_tanglegrams.tex** contains a full list of all 2-crossing critical tanglegrams. Each tanglegram takes 3 lines. The first is the nested bracket format for the left tree, then for the right tree, then the tuples of the matching. Tanglegrams have one line of spacing between them. Tanglegrams are listed in increasing size order; ie, all size 5, then size 6, and so on. As shown in our paper, there are 2 at size 5, 155 at size 6, 331 at size 7, and ??? at size 8.
