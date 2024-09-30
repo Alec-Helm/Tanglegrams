@@ -1,11 +1,23 @@
-def find_k_crossing_critical(k, n, reporting = False):
+def produce_two_crossing_critical_text():
+    """
+    produces the text file containing all 2-cc tanglegrams
+    """
+    find_k_crossing_critical(2, 8, reporting = False, produce_file = "two_crossing_critical_tanglegrams.txt")
+    
+    
+
+def find_k_crossing_critical(k, n, reporting = False, produce_file = False):
     """
     finds all k-crossing critical tanglegrams with maximum size n
 
     if reporting = True then it will give a count of the number found at each size n' <= n
 
+    if produce_file = path_to_directory then it will write the tanglegrams to the given text file
+
     k must be an integer at least 1
     """
+    if not isinstance(produce_file, bool):
+        file = open(produce_file, 'w')
 
     if reporting:
         printing_helper_kcc(0, 1, 0, k)
@@ -20,6 +32,9 @@ def find_k_crossing_critical(k, n, reporting = False):
         while counter < n:
             counter += 1
             printing_helper_kcc(0, counter, 2, k)
+            
+        for T in expanders:
+            print_tanglegram_to_txt(T,file)
         return expanders
 
     
@@ -38,14 +53,15 @@ def find_k_crossing_critical(k, n, reporting = False):
 
         expanders = []
 
-        lopunny = 0
+        check_counter = 0
         for tanglegram in extensions:
-            lopunny += 1
-            print("Checking.....", lopunny," of ",len(extensions))
+            check_counter += 1
+            print("Checking.....", check_counter," of ",len(extensions))
             if tanglegram.crossing_number() < k:
                 expanders.append(tanglegram)
             elif is_crossing_critical(tanglegram,k):
                 outputs.append(tanglegram)
+                print_tanglegram_to_txt(tanglegram,file)
                 global_count += 1
                 local_counter += 1
 
@@ -63,7 +79,22 @@ def printing_helper_kcc(num_found, n, total_number, k):
     print()
 
 
+def print_tanglegram_to_txt(tanglegram, file):
+    """
+    given a tanglegram and a text file,
+    adds three lines
+        one for each tree as a nested bracket, and one for matching
+    then leaves a space
+    """
 
+    a,b,c = tanglegram.to_bracket_format()
+    
+    file.write(str(a)+'\n')
+    file.write(str(b)+'\n')
+    file.write(str(c)+'\n')
+    file.write('\n')
+
+    return
 
 
 def generate_cross_responsible_tanglegrams():
