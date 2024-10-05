@@ -1,11 +1,3 @@
-def produce_two_crossing_critical_text():
-    """
-    produces the text file containing all 2-cc tanglegrams
-    """
-    find_k_crossing_critical(2, 8, reporting = False, produce_file = "two_crossing_critical_tanglegrams.txt")
-    
-    
-
 def find_k_crossing_critical(k, n, reporting = False, produce_file = False):
     """
     finds all k-crossing critical tanglegrams with maximum size n
@@ -49,14 +41,15 @@ def find_k_crossing_critical(k, n, reporting = False, produce_file = False):
         #it could be k-crossing-critical, in which case we add it to the output list and up the relavant counters
         #or neither, in which case we ignore it
         local_counter = 0
-        extensions = find_all_extensions(expanders,counter-1)
+        extensions = find_all_extensions(expanders,counter-1,reporting = reporting)
 
         expanders = []
 
         check_counter = 0
         for tanglegram in extensions:
-            check_counter += 1
-            print("Checking.....", check_counter," of ",len(extensions))
+            if reporting:
+                check_counter += 1
+                print("Checking.....", check_counter," of ",len(extensions))
             if tanglegram.crossing_number() < k:
                 expanders.append(tanglegram)
             elif is_crossing_critical(tanglegram,k):
@@ -95,6 +88,36 @@ def print_tanglegram_to_txt(tanglegram, file):
     file.write('\n')
 
     return
+
+
+
+def read_txt_to_tanglegram(filename):
+    """
+    given a text file formatted as would be the output of
+    the print_tanglegram_to_text function,
+    reads the file into a list of tanglegrams
+    """
+
+    file = open(filename, 'r')
+    lines = file.readlines()
+    clean_lines = [l.strip() for l in lines]
+    
+    tanglegrams = []
+
+    counter = 0
+
+    while counter < len(clean_lines)-1:
+        LT = get_tree(eval(clean_lines[counter]))
+        RT = get_tree(eval(lines[counter +1]))
+        matching = eval(lines[counter +2])
+
+        tanglegrams.append(Tanglegram(LT[0], LT[1], RT[0], RT[1], matching))
+
+        counter += 4
+
+    file.close()
+
+    return tanglegrams
 
 
 def generate_cross_responsible_tanglegrams():
