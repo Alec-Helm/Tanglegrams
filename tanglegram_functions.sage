@@ -1,245 +1,130 @@
-def subtanglegram(tanglegram, edge_set):
+def find_k_crossing_critical(k, n, reporting = False, produce_file = False):
     """
-    returns a new tanglegram which is the subtanglegram
-    of the given tanglegram induced on the given edges
+    finds all k-crossing critical tanglegrams with maximum size n
 
-    edge_set should be formatted as list of matchings
-    just as when defining a new tanglegram
+    if reporting = True then it will give a count of the number found at each size n' <= n
 
-    for compatability with prior tanglegram functions,
-    the leaves are re-labeled to be integers 0,...,k-1
+    if produce_file = path_to_directory then it will write the tanglegrams to the given text file
 
-    edges in edge_set which do not belong to tanglegram are ignored
+    k must be an integer at least 1
     """
-    original_left_tree, original_right_tree, original_matching = tanglegram.to_bracket_format()
+    if not isinstance(produce_file, bool):
+        file = open(produce_file, 'w')
 
-    new_left_tree_nested = induced_subtree(original_left_tree, [l for l,r in edge_set])
-    new_right_tree_nested = induced_subtree(original_right_tree, [r for l,r in edge_set])
+    if reporting:
+        printing_helper_kcc(0, 1, 0, k)
+        printing_helper_kcc(0, 2, 0, k)
+        printing_helper_kcc(0, 3, 0, k)
 
-    new_left_tree_nested_corrected = re_index_tree(new_left_tree_nested, list(range(len(write_down(new_left_tree_nested)))))
-    new_right_tree_nested_corrected = re_index_tree(new_right_tree_nested, list(range(len(write_down(new_right_tree_nested)))))
-
-    new_left_tree = get_tree(new_left_tree_nested_corrected[0])
-    new_right_tree = get_tree(new_right_tree_nested_corrected[0])
-
-    compressed_matching = [x for x in edge_set if x in original_matching]
-
-    new_matching = re_index_matching(compressed_matching, new_left_tree_nested_corrected[1], new_right_tree_nested_corrected[1])
-
-    return Tanglegram(new_left_tree[0], new_left_tree[1], new_right_tree[0], new_right_tree[1], new_matching)
-
-
-
-
-def induced_subtree(tree, leaf_set):
-    """
-    given a rooted binary tree in nested bracket format
-    and s subset of its leaves, return the induced subtree
-    on the given leafset
-
-    subtree is returned as nested list
+    expanders = generate_cross_responsible_tanglegrams()
+    counter = 4
     
-    leaves in leaf_set which do not belong to tree are ignored
-    """
-
-    if isinstance(tree, list) == False:
-        if tree in leaf_set:
-            return tree
-        return 
-
-    upper_tree = induced_subtree(tree[0], leaf_set)
-    lower_tree = induced_subtree(tree[1], leaf_set)
-    next_tree = [upper_tree, lower_tree]
-
-    if None not in next_tree:
-        return [upper_tree, lower_tree]
-    return [subtree for subtree in [upper_tree, lower_tree] if subtree is not None][0]
-
-
-
-
-def re_index_tree(tree, labels):
-    """
-    given a binary tree in nested list format,
-    returns an isomorphic tree with leaves labels
-    from the list of labels as well as the permutation 
-    performed as a list of tuples
-    """
-    permutation = []
-
-    if isinstance(tree,list) == False:
-        permutation = [(tree, labels[0])]
-        return (labels[0], permutation)
-
-    if isinstance(tree[0],list) == True:
-        upper_len = len(write_down(tree[0]))
-    else:
-        upper_len = 1
-    if isinstance(tree[1],list) == True:
-        lower_len = -len(write_down(tree[1]))
-    else:
-        lower_len = -1
-    upper_tree, upper_tree_permutation = re_index_tree(tree[0],labels[:upper_len])
-    lower_tree, lower_tree_permutation = re_index_tree(tree[1],labels[lower_len:])
-
-    return ([upper_tree,lower_tree], upper_tree_permutation+lower_tree_permutation)
-
-
-
-def re_index_matching(matching, left_permutations, right_permutations):
-    """
-    we are given a list of pairs of leaves
-    and a permutation on the left (initial)
-    and right (terminal) leaves. We output
-    the new matching with the permutation performed
-    """
-
-    new_matching = []
-
-    for m in matching:
-        new_m = ([x[1] for x in left_permutations if x[0] == m[0]][0], [y[1] for y in right_permutations if y[0] == m[1]][0])
-        new_matching.append(new_m)
-
-    return new_matching
-
-
-
-def is_crossing_critical(tanglegram, k):
-    """
-    determines if the tanglegram is
-    k-crossing critical by first determining
-    if tcr is at least k, then checking the 
-    tangle crossing number of all size n-1
-    subtanglegrams
-    """
-
-
-    if tanglegram.crossing_number() < k:
-        return False
-
-    for edge in tanglegram.matching:
-        subtanglegram_edges = [m for m in tanglegram.matching if m != edge]
-
-        sub = subtanglegram(tanglegram, subtanglegram_edges)
-        if sub.crossing_number() >= k:
-            return False
-    return True
-
-
-
-def find_all_extensions(tanglegram_set,n):
-    """
-    given a set of tanglegrams all of the same size n,
-    determines all tanglegrams of size n+1 with one of the
-    given tanglegrams as a subtanglegram
-    """
-
-    new_tanglegrams = []
-    count = 0
-    for tanglegram in tanglegram_set:
-        count +=1
-        print("Extending.....", count," of ",len(tanglegram_set))
-        candidates = extend_tanglegram(tanglegram,n)
-        new_tanglegrams = merge_tanglegram_lists(new_tanglegrams, candidates)
-
-
-    return new_tanglegrams
-
-
-
-def extend_tanglegram(tanglegram,n):
-    """
-    given a tanglegrams of size n-1,
-    determines all tanglegrams of size n
-    the tanglegram as a subtanglegram
-
-    the new matching edge is (n,n)
-    """
-    left_tree, right_tree, matching = tanglegram.to_bracket_format()
-
-    new_left_trees = extend_tree(left_tree, n)
-    new_right_trees = extend_tree(right_tree, n)
-    matching.append((n,n))
-
-    new_tanglegrams_candidates = []
-
-    for L in new_left_trees:
-        for R in new_right_trees:
-
-            #due to an oddity in the original tanglegram function, I believe that the leaf labels need to be consistent with a leaf ordering in a layout
-            #as such, we re-order the leaves with 0,...,n-1
-            L_corrected, left_perm = re_index_tree(L, list(range(n+1)))
-            R_corrected, right_perm = re_index_tree(R, list(range(n+1)))
-            matching_corrected = re_index_matching(matching, left_perm, right_perm)
+    if k == 1:
+        printing_helper_kcc(2, 4, 2, k)
+        while counter < n:
+            counter += 1
+            printing_helper_kcc(0, counter, 2, k)
             
-            LT = get_tree(L_corrected)
-            RT = get_tree(R_corrected)
+        for T in expanders:
+            print_tanglegram_to_txt(T,file)
+        return expanders
 
-           
-
-            new_tanglegrams_candidates = merge_tanglegram_lists(new_tanglegrams_candidates, [Tanglegram(LT[0], LT[1], RT[0], RT[1], matching_corrected)])
-            #new_tanglegrams_candidates.append(Tanglegram(LT[0], LT[1], RT[0], RT[1], matching))
     
-    return new_tanglegrams_candidates
+    outputs = []
+    counter += 1
+    global_count = 0
+    
+    while counter <= n:
+        #the expanders are tanglegrams of size counter-1 which have crossing number < k
+        #we extend all by adding a single new edge in all possible ways
+        #each new tanglegram we find is either still too low crossing number, in which case we add it to the new expanders
+        #it could be k-crossing-critical, in which case we add it to the output list and up the relavant counters
+        #or neither, in which case we ignore it
+        local_counter = 0
+        extensions = find_all_extensions(expanders,counter-1,reporting = reporting)
+
+        expanders = []
+
+        check_counter = 0
+        for tanglegram in extensions:
+            if reporting:
+                check_counter += 1
+                print("Checking.....", check_counter," of ",len(extensions))
+            if tanglegram.crossing_number() < k:
+                expanders.append(tanglegram)
+            elif is_crossing_critical(tanglegram,k):
+                outputs.append(tanglegram)
+                print_tanglegram_to_txt(tanglegram,file)
+                global_count += 1
+                local_counter += 1
+
+        if reporting:
+            printing_helper_kcc(local_counter, counter, global_count, k)
+        counter += 1
 
 
 
 
 
-def extend_tree(tree, n):
+def printing_helper_kcc(num_found, n, total_number, k):
+    print("There are ", num_found, " ", k,"-crossing critical tanglegrams of size ",n)
+    print("In total we have found ", total_number, " ", k,"-crossing critical tanglegrams so far")
+    print()
+
+
+def print_tanglegram_to_txt(tanglegram, file):
     """
-    given a tree of size n-1,
-    determines all trees of size n
-    the tree as an induced subtree
-
-    the new leaf gets the label 'n'
-
-    tree is given as a nested list
-    """
-    new_trees = []
-
-    #first let the new leaf by a child of the root
-    new_trees.append([tree, n])
-
-    #then recur through the subtrees
-    if isinstance(tree,list) == True:
-        upper_tree = tree[0]
-        lower_tree = tree[1]
-        
-        new_upper_trees = extend_tree(upper_tree, n)
-        new_lower_trees = extend_tree(lower_tree, n)
-
-        for A in new_upper_trees:
-            new_trees.append([A,lower_tree])
-        for B in new_lower_trees:
-            new_trees.append([upper_tree,B])
-    return new_trees
-
-
-
-
-
-def merge_tanglegram_lists(list_A, list_B):
-    """
-    given two lists of tanglegrams, we add
-    all elements of B to list A which are
-    not ismorphic to any element of A,
-    and for multiple ismorphic copies of the 
-    same tanglegram in B we only add one copy to A
+    given a tanglegram and a text file,
+    adds three lines
+        one for each tree as a nested bracket, and one for matching
+    then leaves a space
     """
 
-    new_list = copy(list_A)
+    a,b,c = tanglegram.to_bracket_format()
+    
+    file.write(str(a)+'\n')
+    file.write(str(b)+'\n')
+    file.write(str(c)+'\n')
+    file.write('\n')
 
-    for candidate in list_B:
-        new = True
+    return
 
-        for tanglegram in new_list:
-            if candidate.is_isomorphic(tanglegram):
-                new = False
-                break
 
-        if new == True:
-            new_list.append(candidate)
 
-    return new_list
+def read_txt_to_tanglegram(filename):
+    """
+    given a text file formatted as would be the output of
+    the print_tanglegram_to_text function,
+    reads the file into a list of tanglegrams
+    """
 
+    file = open(filename, 'r')
+    lines = file.readlines()
+    clean_lines = [l.strip() for l in lines]
+    
+    tanglegrams = []
+
+    counter = 0
+
+    while counter < len(clean_lines)-1:
+        LT = get_tree(eval(clean_lines[counter]))
+        RT = get_tree(eval(lines[counter +1]))
+        matching = eval(lines[counter +2])
+
+        tanglegrams.append(Tanglegram(LT[0], LT[1], RT[0], RT[1], matching))
+
+        counter += 4
+
+    file.close()
+
+    return tanglegrams
+
+
+def generate_cross_responsible_tanglegrams():
+    """
+    outputs the two 1-crossing critical tanglegrams
+    """
+    K1 = Tanglegram('0123',get_tree([[0,1],[2,3]])[1],'0123',get_tree([[0,1],[2,3]])[1] ,[(0,0),(1,2),(2,1),(3,3)])
+    K2 = Tanglegram('0123',get_tree([[[0,1],2],3])[1],'0123',get_tree([0,[1,[2,3]]])[1] ,[(0,0),(1,2),(2,1),(3,3)])
+
+    return [K1, K2]
